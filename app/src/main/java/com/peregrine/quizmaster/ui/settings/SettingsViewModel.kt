@@ -1,0 +1,59 @@
+package com.peregrine.quizmaster.ui.settings
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.peregrine.quizmaster.core.UiState
+import com.peregrine.quizmaster.data.model.User
+import com.peregrine.quizmaster.data.repository.AuthRepository
+import com.peregrine.quizmaster.data.repository.FirebaseAuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
+class SettingsViewModel : ViewModel() {
+
+    private val authRepository: AuthRepository = FirebaseAuthRepository()
+
+    private val _userState = MutableStateFlow<UiState<User>>(UiState.Loading)
+    val userState: StateFlow<UiState<User>> = _userState
+
+    val isGuest: Boolean get() = authRepository.getCurrentUser() == null
+
+    init {
+        loadUser()
+    }
+
+    fun loadUser() {
+        val firebaseUser = authRepository.getCurrentUser()
+        if (firebaseUser == null) {
+            // Guest user
+            _userState.value = UiState.Success(
+                User(name = "Guest User", email = "Playing without an account")
+            )
+            return
+        }
+
+        _userState.value = UiState.Loading
+        viewModelScope.launch {
+            val user = authRepository.getUserFromFirestore(firebaseUser.uid)
+            _userState.value = if (user != null) {
+                UiState.Success(user)
+            } else {
+                // Fallback to Firebase Auth data
+                UiState.Success(
+                    User(
+                        uid = firebaseUser.uid,
+                        name = firebaseUser.displayName ?: "",
+                        email = firebaseUser.email ?: "",
+                        photoUrl = firebaseUser.photoUrl?.toString() ?: ""
+                    )
+                )
+            }
+        }
+    }
+
+    fun signOut(onSignedOut: () -> Unit) {
+        authRepository.signOut()
+        onSignedOut()
+    }
+}

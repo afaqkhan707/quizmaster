@@ -1,17 +1,28 @@
 package com.peregrine.quizmaster.ui.result
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.peregrine.quizmaster.ui.quiz.QuizViewModel
+
+// Test interstitial ID — replace with real AdMob Interstitial Unit ID before release
+private const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
 
 @Composable
 fun ResultScreen(
@@ -23,9 +34,30 @@ fun ResultScreen(
     val total = state.questions.size
     val score = state.score
     val percentage = if (total > 0) score * 100 / total else 0
+    val context = LocalContext.current
 
     val purple = Color(0xFF7562E8)
     val ink = Color(0xFF20243A)
+
+    // Load & show interstitial ad when screen first appears
+    LaunchedEffect(Unit) {
+        val activity = context as? Activity ?: return@LaunchedEffect
+        InterstitialAd.load(
+            context,
+            INTERSTITIAL_AD_UNIT_ID,
+            AdRequest.Builder().build(),
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                        override fun onAdDismissedFullScreenContent() { /* ad closed */ }
+                        override fun onAdFailedToShowFullScreenContent(e: AdError) { }
+                    }
+                    ad.show(activity)
+                }
+                override fun onAdFailedToLoad(error: LoadAdError) { /* ignore, show result anyway */ }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -36,7 +68,6 @@ fun ResultScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text("🏆", fontSize = 64.sp)
-
         Spacer(Modifier.height(20.dp))
 
         Text(
@@ -45,7 +76,6 @@ fun ResultScreen(
             fontSize = 28.sp,
             fontWeight = FontWeight.ExtraBold
         )
-
         Spacer(Modifier.height(8.dp))
 
         Text(
@@ -59,14 +89,10 @@ fun ResultScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            )
+            colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(28.dp),
+                modifier = Modifier.fillMaxWidth().padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -75,7 +101,6 @@ fun ResultScreen(
                     fontSize = 42.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
-
                 Text("Correct answers", color = Color(0xFF777D91))
 
                 Spacer(Modifier.height(20.dp))
@@ -86,8 +111,15 @@ fun ResultScreen(
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
-
                 Text("Your score", color = Color(0xFF777D91))
+
+                if (percentage == 100) {
+                    Spacer(Modifier.height(12.dp))
+                    Text("Perfect score! 🎉", color = Color(0xFF258753), fontWeight = FontWeight.Bold)
+                } else if (percentage >= 70) {
+                    Spacer(Modifier.height(12.dp))
+                    Text("Great job! 👍", color = purple, fontWeight = FontWeight.SemiBold)
+                }
             }
         }
 
@@ -95,13 +127,9 @@ fun ResultScreen(
 
         Button(
             onClick = onRetry,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp),
+            modifier = Modifier.fillMaxWidth().height(54.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = purple
-            )
+            colors = ButtonDefaults.buttonColors(containerColor = purple)
         ) {
             Text("Try again", fontWeight = FontWeight.Bold)
         }
@@ -110,9 +138,7 @@ fun ResultScreen(
 
         OutlinedButton(
             onClick = onHome,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp),
+            modifier = Modifier.fillMaxWidth().height(54.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
             Text("Back to home", color = ink)

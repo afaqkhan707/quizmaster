@@ -20,12 +20,54 @@ fun QuizScreen(
     onBack: () -> Unit
 ) {
     val state = viewModel.uiState
-    val question = state.currentQuestion
 
     val purple = Color(0xFF7562E8)
     val ink = Color(0xFF20243A)
     val muted = Color(0xFF777D91)
     val page = Color(0xFFF7F7FC)
+
+    // Loading state
+    if (state.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(page),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(color = purple)
+                Spacer(Modifier.height(16.dp))
+                Text("Loading questions...", color = muted)
+            }
+        }
+        return
+    }
+
+    // Error state
+    if (state.error != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(page)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("😕", fontSize = 48.sp)
+            Spacer(Modifier.height(16.dp))
+            Text(state.error, color = ink, fontSize = 16.sp)
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = onBack,
+                colors = ButtonDefaults.buttonColors(containerColor = purple)
+            ) {
+                Text("Go back")
+            }
+        }
+        return
+    }
+
+    val question = state.currentQuestion
 
     if (question == null) {
         Column(
@@ -38,15 +80,12 @@ fun QuizScreen(
         ) {
             Text("No questions available", color = ink)
             Spacer(Modifier.height(16.dp))
-            Button(onClick = onBack) {
-                Text("Go back")
-            }
+            Button(onClick = onBack) { Text("Go back") }
         }
         return
     }
 
-    val progress =
-        (state.currentIndex + 1).toFloat() / state.questions.size
+    val progress = (state.currentIndex + 1).toFloat() / state.questions.size
 
     Column(
         modifier = Modifier
@@ -70,7 +109,6 @@ fun QuizScreen(
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp
             )
-
             Text(
                 "${state.currentIndex + 1} of ${state.questions.size}",
                 color = muted,
@@ -82,20 +120,14 @@ fun QuizScreen(
 
         LinearProgressIndicator(
             progress = { progress },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(7.dp),
+            modifier = Modifier.fillMaxWidth().height(7.dp),
             color = purple,
             trackColor = Color(0xFFE6E3F7)
         )
 
         Spacer(Modifier.height(30.dp))
 
-        Text(
-            "Think carefully 💡",
-            color = muted,
-            fontSize = 14.sp
-        )
+        Text("Think carefully 💡", color = muted, fontSize = 14.sp)
 
         Spacer(Modifier.height(12.dp))
 
@@ -114,16 +146,14 @@ fun QuizScreen(
 
             val optionColor = when {
                 state.selectedAnswer == null -> Color.White
-                index == question.correctAnswerIndex ->
-                    Color(0xFFE0F5E9)
+                index == question.correctAnswerIndex -> Color(0xFFE0F5E9)
                 selected -> Color(0xFFFFE6E6)
                 else -> Color.White
             }
 
             val borderColor = when {
                 selected -> purple
-                state.selectedAnswer != null &&
-                        index == question.correctAnswerIndex ->
+                state.selectedAnswer != null && index == question.correctAnswerIndex ->
                     Color(0xFF35A66F)
                 else -> Color(0xFFE8E8F0)
             }
@@ -132,23 +162,15 @@ fun QuizScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 5.dp)
-                    .clickable(
-                        enabled = state.selectedAnswer == null
-                    ) {
+                    .clickable(enabled = state.selectedAnswer == null) {
                         viewModel.selectAnswer(index)
                     },
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = optionColor
-                ),
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp, borderColor
-                )
+                colors = CardDefaults.cardColors(containerColor = optionColor),
+                border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -156,20 +178,14 @@ fun QuizScreen(
                         color = purple,
                         fontWeight = FontWeight.Bold
                     )
-
                     Spacer(Modifier.width(14.dp))
-
                     Text(
                         option,
                         modifier = Modifier.weight(1f),
                         color = ink,
                         fontSize = 15.sp
                     )
-
-                    if (
-                        state.selectedAnswer != null &&
-                        index == question.correctAnswerIndex
-                    ) {
+                    if (state.selectedAnswer != null && index == question.correctAnswerIndex) {
                         Text("✓", color = Color(0xFF258753))
                     }
                 }
@@ -179,20 +195,16 @@ fun QuizScreen(
         Spacer(Modifier.weight(1f))
 
         if (state.selectedAnswer != null) {
-            val correct =
-                state.selectedAnswer == question.correctAnswerIndex
-
+            val correct = state.selectedAnswer == question.correctAnswerIndex
             Text(
                 if (correct) "Correct answer! 🎉" else "Not quite — learn and try again!",
                 color = if (correct) Color(0xFF258753) else Color(0xFFCC5151),
                 fontWeight = FontWeight.SemiBold
             )
-
             if (question.explanation.isNotBlank()) {
                 Spacer(Modifier.height(5.dp))
                 Text(question.explanation, color = muted, fontSize = 13.sp)
             }
-
             Spacer(Modifier.height(12.dp))
         }
 
@@ -200,23 +212,18 @@ fun QuizScreen(
             onClick = {
                 val lastQuestion = state.isLastQuestion
                 viewModel.nextQuestion()
-
                 if (lastQuestion) {
+                    viewModel.saveStatsIfLoggedIn()
                     onFinish()
                 }
             },
             enabled = state.selectedAnswer != null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp),
+            modifier = Modifier.fillMaxWidth().height(54.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = purple
-            )
+            colors = ButtonDefaults.buttonColors(containerColor = purple)
         ) {
             Text(
-                if (state.isLastQuestion) "See my result  →"
-                else "Next question  →",
+                if (state.isLastQuestion) "See my result  →" else "Next question  →",
                 fontWeight = FontWeight.Bold
             )
         }
