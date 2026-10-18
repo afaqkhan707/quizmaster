@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1067229440289",
+    "project_id": "quizmasterperegrine",
+    "storage_bucket": "quizmasterperegrine.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067229440289:android:07df2baf44706421887660",
+        "android_client_info": {
+          "package_name": "com.peregrine.quizmaster"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1067229440289-uml2ohj5pc790607k8vlobnhit0q1k12.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.peregrine.quizmaster",
+            "certificate_hash": "e9f9c3f6ac5a07b2bc9ddd3d5dc0084c4f440a3a"
+          }
+        },
+        {
+          "client_id": "1067229440289-pt8pd7sb7t3jsj3gt8frqdoo6de6qqmf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaqLTOY4l1diFbXEn7QovAqlDwWJ_QtQA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1067229440289-pt8pd7sb7t3jsj3gt8frqdoo6de6qqmf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
