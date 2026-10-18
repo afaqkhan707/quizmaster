@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
+import com.peregrine.quizmaster.ui.layout.screenSystemBars
 import kotlinx.coroutines.delay
 
 private val Purple = Color(0xFF7562E8)
@@ -47,6 +48,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .screenSystemBars()
             .background(
                 Brush.verticalGradient(listOf(Purple, PurpleLight))
             ),

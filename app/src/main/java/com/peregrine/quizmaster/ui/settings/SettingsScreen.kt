@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,6 +25,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.peregrine.quizmaster.core.UiState
 import com.peregrine.quizmaster.data.model.User
+import com.peregrine.quizmaster.ui.layout.ScreenHorizontalPadding
+import com.peregrine.quizmaster.ui.layout.screenNavigationBars
+import com.peregrine.quizmaster.ui.layout.screenStatusBars
 
 private val Purple = Color(0xFF7562E8)
 private val Ink = Color(0xFF20243A)
@@ -66,8 +70,8 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Page)
+            .screenStatusBars()
     ) {
-        // Top bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,9 +96,11 @@ fun SettingsScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
+                .screenNavigationBars()
+                .padding(horizontal = ScreenHorizontalPadding)
         ) {
 
             when (val state = userState) {
@@ -284,7 +290,14 @@ private fun StatCard(
         ) {
             Text(emoji, fontSize = 24.sp)
             Spacer(Modifier.height(8.dp))
-            Text(value, color = Purple, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+            Text(
+                value,
+                color = Purple,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             Text(label, color = Muted, fontSize = 12.sp)
         }
     }

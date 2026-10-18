@@ -39,15 +39,22 @@ class QuizViewModel : ViewModel() {
     fun startQuiz(categoryId: String) {
         uiState = QuizUiState(isLoading = true, currentCategoryId = categoryId)
         viewModelScope.launch {
-            val questions = quizRepository.getQuestions(categoryId)
-            uiState = if (questions.isNotEmpty()) {
-                QuizUiState(
-                    questions = questions,
-                    currentCategoryId = categoryId
-                )
-            } else {
-                QuizUiState(
-                    error = "No questions found for this category.",
+            try {
+                val questions = quizRepository.getQuestions(categoryId)
+                uiState = if (questions.isNotEmpty()) {
+                    QuizUiState(
+                        questions = questions,
+                        currentCategoryId = categoryId
+                    )
+                } else {
+                    QuizUiState(
+                        error = "No questions found. Check your connection and try again.",
+                        currentCategoryId = categoryId
+                    )
+                }
+            } catch (e: Exception) {
+                uiState = QuizUiState(
+                    error = e.message ?: "Could not load questions.",
                     currentCategoryId = categoryId
                 )
             }

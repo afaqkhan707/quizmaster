@@ -23,6 +23,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.peregrine.quizmaster.core.UiState
 import com.peregrine.quizmaster.data.model.Category
 import com.peregrine.quizmaster.ui.ads.BannerAdView
+import com.peregrine.quizmaster.ui.layout.ScreenHorizontalPadding
+import com.peregrine.quizmaster.ui.layout.screenNavigationBars
+import com.peregrine.quizmaster.ui.layout.screenStatusBars
 
 private val Purple = Color(0xFF7562E8)
 private val Ink = Color(0xFF20243A)
@@ -36,22 +39,22 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val categoriesState by homeViewModel.categoriesState.collectAsStateWithLifecycle()
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Page)
     ) {
-        // Scrollable content
         Column(
             modifier = Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp)
+                .fillMaxWidth()
+                .screenStatusBars()
+                .verticalScroll(scrollState)
+                .padding(horizontal = ScreenHorizontalPadding)
+                .padding(top = 12.dp, bottom = 16.dp)
         ) {
-            Spacer(Modifier.height(20.dp))
-
-            // Top row: title + settings icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -93,7 +96,6 @@ fun HomeScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Daily challenge banner
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -150,7 +152,6 @@ fun HomeScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            // Categories state
             when (val state = categoriesState) {
                 is UiState.Loading -> {
                     Box(
@@ -200,14 +201,19 @@ fun HomeScreen(
                 color = Muted,
                 fontSize = 12.sp
             )
-
-            Spacer(Modifier.height(12.dp))
         }
 
-        // Banner ad pinned at bottom
-        BannerAdView(
-            modifier = Modifier.fillMaxWidth()
-        )
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = Page,
+            shadowElevation = 8.dp
+        ) {
+            BannerAdView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .screenNavigationBars()
+            )
+        }
     }
 }
 

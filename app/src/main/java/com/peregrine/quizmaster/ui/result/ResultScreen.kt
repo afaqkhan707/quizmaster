@@ -3,7 +3,9 @@ package com.peregrine.quizmaster.ui.result
 import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,9 +21,11 @@ import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.peregrine.quizmaster.ui.layout.ScreenHorizontalPadding
+import com.peregrine.quizmaster.ui.layout.screenNavigationBars
+import com.peregrine.quizmaster.ui.layout.screenStatusBars
 import com.peregrine.quizmaster.ui.quiz.QuizViewModel
 
-// Test interstitial ID — replace with real AdMob Interstitial Unit ID before release
 private const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
 
 @Composable
@@ -35,11 +39,11 @@ fun ResultScreen(
     val score = state.score
     val percentage = if (total > 0) score * 100 / total else 0
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     val purple = Color(0xFF7562E8)
     val ink = Color(0xFF20243A)
 
-    // Load & show interstitial ad when screen first appears
     LaunchedEffect(Unit) {
         val activity = context as? Activity ?: return@LaunchedEffect
         InterstitialAd.load(
@@ -49,12 +53,13 @@ fun ResultScreen(
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) {
                     ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                        override fun onAdDismissedFullScreenContent() { /* ad closed */ }
+                        override fun onAdDismissedFullScreenContent() { }
                         override fun onAdFailedToShowFullScreenContent(e: AdError) { }
                     }
                     ad.show(activity)
                 }
-                override fun onAdFailedToLoad(error: LoadAdError) { /* ignore, show result anyway */ }
+
+                override fun onAdFailedToLoad(error: LoadAdError) { }
             }
         )
     }
@@ -63,7 +68,11 @@ fun ResultScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF7F7FC))
-            .padding(24.dp),
+            .screenStatusBars()
+            .screenNavigationBars()
+            .verticalScroll(scrollState)
+            .padding(horizontal = ScreenHorizontalPadding)
+            .padding(top = 24.dp, bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -92,7 +101,9 @@ fun ResultScreen(
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(28.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -127,7 +138,9 @@ fun ResultScreen(
 
         Button(
             onClick = onRetry,
-            modifier = Modifier.fillMaxWidth().height(54.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = purple)
         ) {
@@ -138,7 +151,9 @@ fun ResultScreen(
 
         OutlinedButton(
             onClick = onHome,
-            modifier = Modifier.fillMaxWidth().height(54.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
             Text("Back to home", color = ink)
