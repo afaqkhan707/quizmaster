@@ -259,7 +259,7 @@ fun QuizScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = purple)
                 ) {
                     Text(
-                        if (state.isLastQuestion) "See my result  →" else "Next question  →",
+                        if (state.isLastQuestion) "See my result " else "Next question",
                         fontWeight = FontWeight.Bold
                     )
                 }

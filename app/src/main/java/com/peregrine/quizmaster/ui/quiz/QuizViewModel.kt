@@ -40,15 +40,28 @@ class QuizViewModel : ViewModel() {
         uiState = QuizUiState(isLoading = true, currentCategoryId = categoryId)
         viewModelScope.launch {
             try {
-                val questions = quizRepository.getQuestions(categoryId)
-                uiState = if (questions.isNotEmpty()) {
+                val questions = if (categoryId == "random_mix") {
+                    val categories = quizRepository.getCategories()
+                    val allQuestions = mutableListOf<Question>()
+                    for (cat in categories) {
+                        allQuestions.addAll(quizRepository.getQuestions(cat.id))
+                    }
+                    allQuestions
+                } else {
+                    quizRepository.getQuestions(categoryId)
+                }
+
+                val shuffled = questions.shuffled().take(10).map { q ->
+                    q.copy(options = q.options.shuffled())
+                }
+                uiState = if (shuffled.isNotEmpty()) {
                     QuizUiState(
-                        questions = questions,
+                        questions = shuffled,
                         currentCategoryId = categoryId
                     )
                 } else {
                     QuizUiState(
-                        error = "No questions found. Check your connection and try again.",
+                        error = "No questions found.",
                         currentCategoryId = categoryId
                     )
                 }

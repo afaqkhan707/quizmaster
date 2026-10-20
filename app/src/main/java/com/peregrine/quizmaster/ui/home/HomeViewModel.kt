@@ -8,6 +8,7 @@ import com.peregrine.quizmaster.data.repository.FirestoreQuizRepository
 import com.peregrine.quizmaster.data.repository.QuizRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
@@ -24,11 +25,12 @@ class HomeViewModel : ViewModel() {
     fun loadCategories() {
         _categoriesState.value = UiState.Loading
         viewModelScope.launch {
-            val categories = quizRepository.getCategories()
-            _categoriesState.value = if (categories.isNotEmpty()) {
-                UiState.Success(categories)
-            } else {
-                UiState.Error("No categories found. Check your internet connection.")
+            quizRepository.getCategoriesFlow().collectLatest { categories ->
+                _categoriesState.value = if (categories.isNotEmpty()) {
+                    UiState.Success(categories)
+                } else {
+                    UiState.Error("No categories found. Check your internet connection.")
+                }
             }
         }
     }

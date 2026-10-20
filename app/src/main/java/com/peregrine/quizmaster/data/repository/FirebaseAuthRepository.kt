@@ -24,6 +24,7 @@ class FirebaseAuthRepository : AuthRepository {
             val user = result.user ?: return Result.failure(Exception("Sign-in failed"))
             Result.success(user)
         } catch (e: Exception) {
+            println(" check$e")
             Result.failure(e)
         }
     }

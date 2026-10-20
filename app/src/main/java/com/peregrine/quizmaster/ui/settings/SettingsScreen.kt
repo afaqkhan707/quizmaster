@@ -42,6 +42,8 @@ fun SettingsScreen(
 ) {
     val userState by settingsViewModel.userState.collectAsStateWithLifecycle()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var seedMessage by remember { mutableStateOf<String?>(null) }
+    var isSeeding by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -61,6 +63,19 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
                     Text("Cancel", color = Muted)
+                }
+            }
+        )
+    }
+
+    if (seedMessage != null) {
+        AlertDialog(
+            onDismissRequest = { seedMessage = null },
+            title = { Text("Firestore Seed") },
+            text = { Text(seedMessage!!) },
+            confirmButton = {
+                TextButton(onClick = { seedMessage = null }) {
+                    Text("OK", color = Purple)
                 }
             }
         )
@@ -121,6 +136,17 @@ fun SettingsScreen(
                     Spacer(Modifier.height(20.dp))
                     PreferencesSection()
                     Spacer(Modifier.height(20.dp))
+                    DeveloperSection(
+                        isSeeding = isSeeding,
+                        onSeedClick = {
+                            isSeeding = true
+                            settingsViewModel.seedSampleData { success, msg ->
+                                isSeeding = false
+                                seedMessage = msg
+                            }
+                        }
+                    )
+                    Spacer(Modifier.height(20.dp))
                     AccountSection(
                         isGuest = settingsViewModel.isGuest,
                         onLogout = { showLogoutDialog = true }
@@ -135,6 +161,62 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun DeveloperSection(isSeeding: Boolean, onSeedClick: () -> Unit) {
+    Text(
+        "Developer Tools",
+        color = Ink,
+        fontWeight = FontWeight.Bold,
+        fontSize = 17.sp
+    )
+    Spacer(Modifier.height(10.dp))
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("☁️", fontSize = 22.sp)
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text("Seed Data", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Text("Upload sample categories", color = Muted, fontSize = 12.sp)
+                }
+            }
+
+            Button(
+                onClick = onSeedClick,
+                enabled = !isSeeding,
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Purple),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+            ) {
+                if (isSeeding) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Upload", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+            }
         }
     }
 }
@@ -194,7 +276,7 @@ private fun ProfileSection(user: User, isGuest: Boolean) {
                 if (isGuest) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Sign in to save your progress →",
+                        "Sign in to save your progress",
                         color = Purple,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold

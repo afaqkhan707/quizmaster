@@ -6,6 +6,8 @@ import com.peregrine.quizmaster.core.UiState
 import com.peregrine.quizmaster.data.model.User
 import com.peregrine.quizmaster.data.repository.AuthRepository
 import com.peregrine.quizmaster.data.repository.FirebaseAuthRepository
+import com.peregrine.quizmaster.data.repository.FirestoreQuizRepository
+import com.peregrine.quizmaster.data.repository.QuizRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -13,6 +15,7 @@ import kotlinx.coroutines.launch
 class SettingsViewModel : ViewModel() {
 
     private val authRepository: AuthRepository = FirebaseAuthRepository()
+    private val quizRepository: QuizRepository = FirestoreQuizRepository()
 
     private val _userState = MutableStateFlow<UiState<User>>(UiState.Loading)
     val userState: StateFlow<UiState<User>> = _userState
@@ -49,6 +52,16 @@ class SettingsViewModel : ViewModel() {
                     )
                 )
             }
+        }
+    }
+
+    fun seedSampleData(onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            val result = quizRepository.seedSampleData()
+            result.fold(
+                onSuccess = { onResult(true, "Successfully uploaded 4 categories & 40 questions!") },
+                onFailure = { e -> onResult(false, e.message ?: "Upload failed") }
+            )
         }
     }
 

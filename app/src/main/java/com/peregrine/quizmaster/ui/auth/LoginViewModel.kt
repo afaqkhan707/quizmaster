@@ -1,13 +1,16 @@
 package com.peregrine.quizmaster.ui.auth
 
 import android.content.Context
+import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 import com.peregrine.quizmaster.core.UiState
@@ -42,7 +45,16 @@ class LoginViewModel : ViewModel() {
                     .addCredentialOption(googleIdOption)
                     .build()
 
-                val result = credentialManager.getCredential(context, request)
+                val result = try {
+                    credentialManager.getCredential(context, request)
+                } catch (e: NoCredentialException) {
+                    Log.w("LoginViewModel", "One Tap unavailable, using button flow: ${e.message}")
+                    val signInOption = GetSignInWithGoogleOption.Builder(WEB_CLIENT_ID).build()
+                    val fallbackRequest = GetCredentialRequest.Builder()
+                        .addCredentialOption(signInOption)
+                        .build()
+                    credentialManager.getCredential(context, fallbackRequest)
+                }
                 val credential = result.credential
 
                 if (credential is CustomCredential &&
@@ -69,6 +81,7 @@ class LoginViewModel : ViewModel() {
                             onSuccess()
                         },
                         onFailure = { e ->
+                            e.printStackTrace()
                             _loginState.value = UiState.Error(e.message ?: "Sign-in failed")
                         }
                     )
@@ -76,6 +89,7 @@ class LoginViewModel : ViewModel() {
                     _loginState.value = UiState.Error("Unexpected credential type")
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 _loginState.value = UiState.Error(e.message ?: "Sign-in failed")
             }
         }
@@ -95,6 +109,5 @@ class LoginViewModel : ViewModel() {
         // Your Firebase Web Client ID — get from Firebase Console → Authentication → Google → Web client ID
         // TODO: Replace with your actual Web Client ID from Firebase Console
         const val WEB_CLIENT_ID =
-            "1067229440289-pt8pd7sb7t3jsj3gt8frqdoo6de6qqmf.apps.googleusercontent.com"
-    }
+            "1067229440289-pt8pd7sb7t3jsj3gt8frqdoo6de6qqmf.apps.googleusercontent.com"   }
 }
