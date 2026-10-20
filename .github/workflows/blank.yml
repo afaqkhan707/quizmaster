@@ -14,6 +14,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Code
@@ -25,12 +26,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build Debug APK
         run: |
-          chmod +x gradlew
+          chmod +x ./gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
