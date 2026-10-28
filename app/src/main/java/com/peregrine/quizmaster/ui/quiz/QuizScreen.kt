@@ -167,14 +167,14 @@ fun QuizScreen(
 
                 val optionColor = when {
                     state.selectedAnswer == null -> Color.White
-                    index == question.correctAnswerIndex -> Color(0xFFE0F5E9)
+                    option == question.correctAnswer -> Color(0xFFE0F5E9)
                     selected -> Color(0xFFFFE6E6)
                     else -> Color.White
                 }
 
                 val borderColor = when {
                     selected -> purple
-                    state.selectedAnswer != null && index == question.correctAnswerIndex ->
+                    state.selectedAnswer != null && option == question.correctAnswer ->
                         Color(0xFF35A66F)
                     else -> Color(0xFFE8E8F0)
                 }
@@ -209,7 +209,7 @@ fun QuizScreen(
                             fontSize = 15.sp,
                             lineHeight = 20.sp
                         )
-                        if (state.selectedAnswer != null && index == question.correctAnswerIndex) {
+                        if (state.selectedAnswer != null && option == question.correctAnswer) {
                             Text("✓", color = Color(0xFF258753))
                         }
                     }
@@ -218,7 +218,8 @@ fun QuizScreen(
 
             if (state.selectedAnswer != null) {
                 Spacer(Modifier.height(16.dp))
-                val correct = state.selectedAnswer == question.correctAnswerIndex
+                val selectedOption = question.options.getOrNull(state.selectedAnswer)
+                val correct = selectedOption == question.correctAnswer
                 Text(
                     if (correct) "Correct answer! 🎉" else "Not quite — learn and try again!",
                     color = if (correct) Color(0xFF258753) else Color(0xFFCC5151),

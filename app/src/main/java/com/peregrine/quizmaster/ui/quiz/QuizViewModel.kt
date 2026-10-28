@@ -28,10 +28,10 @@ data class QuizUiState(
         get() = currentIndex == questions.lastIndex
 }
 
-class QuizViewModel : ViewModel() {
-
-    private val quizRepository: QuizRepository = FirestoreQuizRepository()
+class QuizViewModel(
+    private val quizRepository: QuizRepository = FirestoreQuizRepository(),
     private val authRepository: AuthRepository = FirebaseAuthRepository()
+) : ViewModel() {
 
     var uiState by mutableStateOf(QuizUiState())
         private set
@@ -81,10 +81,11 @@ class QuizViewModel : ViewModel() {
 
     fun nextQuestion() {
         val question = uiState.currentQuestion ?: return
-        val answer = uiState.selectedAnswer ?: return
+        val answerIndex = uiState.selectedAnswer ?: return
+        val selectedOption = question.options.getOrNull(answerIndex)
 
         val updatedScore = uiState.score +
-                if (answer == question.correctAnswerIndex) 1 else 0
+                if (selectedOption == question.correctAnswer) 1 else 0
 
         uiState = if (uiState.isLastQuestion) {
             uiState.copy(score = updatedScore)

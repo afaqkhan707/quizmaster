@@ -59,7 +59,7 @@ class SettingsViewModel : ViewModel() {
         viewModelScope.launch {
             val result = quizRepository.seedSampleData()
             result.fold(
-                onSuccess = { onResult(true, "Successfully uploaded 4 categories & 40 questions!") },
+                onSuccess = { onResult(true, "Successfully uploaded sample categories & questions!") },
                 onFailure = { e -> onResult(false, e.message ?: "Upload failed") }
             )
         }
